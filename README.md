@@ -1,5 +1,6 @@
 # BlumAuto
-Follow This Installation Guide [https://t.me/verifiedcryptoairdops/167](https://t.me/savanop121)
+Follow This Installation Guide ([https://t.me/Instant_Earn77])
+([https://t.me/NotCryptoz])
 
 # Warning
 
@@ -18,7 +19,7 @@ Follow This Installation Guide [https://t.me/verifiedcryptoairdops/167](https://
 
 # Register ?
 
-Click the following url to register : [https://t.me/BlumCryptoBot/app?startapp=ref_aPYIYj1oKc](https://t.me/blum/app?startapp=ref_naPVKFOOD1)
+Click the following url to register : [https://t.me/BlumCryptoBot/app?startapp=ref_aPYIYj1oKc]([https://t.me/blum/app?startapp=ref_hw60SfOgZd])
 
 # How to Use
 
@@ -183,7 +184,7 @@ You can run the script continuously using a VPS or RDP. Use the screen applicati
 
 # Discussion
 
-If you have any questions or need further assistance, join : [@airdrop script (Verified Only)](https://t.me/savanop121)
+If you have any questions or need further assistance, join : [@Instant_Scripts (Verified Only)](https://t.me/Instant_Earn77)
 
 ## Q&A
 

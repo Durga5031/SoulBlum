@@ -73,14 +73,14 @@ socks5://user:pass@127.0.0.1:6969
    
    git site : [https://git-scm.com/](https://git-scm.com/)
 
-2. Clone this repository
+2. Clone this httpsrepository
    ```shell
-   git clone https://github.com/orrnobmahmud/blumauto.git
+   git clone https://github.com/Itscryptoz/InstantBlum.git
    ```
 
 3. goto blumauto directory
    ```
-   cd blumauto
+   cd InstantBlum
    ```
 
 4. install the require library

@@ -442,10 +442,10 @@ async def main():
                                                                                                                                                  
                                                                                             
                                                                 
-    Auto Claim Bot For Blum - @savanop
+    Auto Claim Bot For Blum - @NotCryptoz
     Author  : Airdop script  : Thanks to @savan
-    Github  : https://github.com/Savanop121
-    Telegram: https://t.me/savanop121
+    Script Channel  : https://t.me/Instant_Script
+    Airdrop Channel: https://t.me/Instant_Earn77
         {Style.RESET_ALL}"""
 
     arg = argparse.ArgumentParser()

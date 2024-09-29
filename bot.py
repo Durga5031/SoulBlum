@@ -442,8 +442,7 @@ async def main():
                                                                                                                                                  
                                                                                             
                                                                 
-    Auto Claim Bot For Blum - @NotCryptoz
-    Author  : Airdop script  : Thanks to @savan
+    Auto Blum Script Made by © - @NotCryptoz
     Script Channel  : https://t.me/Instant_Script
     Airdrop Channel: https://t.me/Instant_Earn77
         {Style.RESET_ALL}"""

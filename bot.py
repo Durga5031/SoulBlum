@@ -16,7 +16,7 @@ from urllib.parse import parse_qs
 from datetime import datetime
 from models import (
     get_by_id,
-    update_useragent,
+    get_token,
     insert,
     update_balance,
     update_token,
@@ -24,7 +24,6 @@ from models import (
 )
 import python_socks
 from httpx_socks import AsyncProxyTransport
-from fake_useragent import UserAgent
 
 
 init(autoreset=True)
@@ -44,14 +43,12 @@ config_file = "config.json"
 
 
 class Config:
-    def __init__(self, auto_task, auto_game, auto_claim, low, high, clow, chigh):
+    def __init__(self, auto_task, auto_game, auto_claim, low, high):
         self.auto_task = auto_task
         self.auto_game = auto_game
         self.auto_claim = auto_claim
         self.low = low
         self.high = high
-        self.clow = clow
-        self.chigh = chigh
 
 
 class BlumTod:
@@ -98,17 +95,16 @@ class BlumTod:
         ipinfo1_url = "https://ipapi.co/json/"
         ipinfo2_url = "https://ipwho.is/"
         ipinfo3_url = "https://freeipapi.com/api/json"
-        headers = {"user-agent": "marin kitagawa"}
         try:
-            res = await self.http(ipinfo1_url, headers)
+            res = await self.ses.get(ipinfo1_url)
             ip = res.json().get("ip")
             country = res.json().get("country")
             if not ip:
-                res = await self.http(ipinfo2_url, headers)
+                res = await self.ses.get(ipinfo2_url)
                 ip = res.json().get("ip")
                 country = res.json().get("country_code")
                 if not ip:
-                    res = await self.http(ipinfo3_url, headers)
+                    res = await self.ses.get(ipinfo3_url)
                     ip = res.json().get("ipAddress")
                     country = res.json().get("countryCode")
             self.log(f"{green}ip : {white}{ip} {green}country : {white}{country}")
@@ -147,7 +143,7 @@ class BlumTod:
             except (
                 httpx.ProxyError,
                 python_socks._errors.ProxyTimeoutError,
-                python_socks._errors.ProxyError,
+                python_socks.ProxyError,
             ):
                 proxy = self.get_random_proxy(0, israndom=True)
                 transport = AsyncProxyTransport.from_url(proxy)
@@ -189,11 +185,7 @@ class BlumTod:
         res = await self.http(auth_url, self.headers, json.dumps(data))
         token = res.json().get("token")
         if not token:
-            message = res.json().get("message", "")
-            if "signature is invalid" in message:
-                self.log(f"{red}data has the wrong format or data is outdated.")
-                return False
-            self.log(f"{red}{message}, check log file http.log !")
+            self.log(f"{red}failed get access token, check log file http.log !")
             return False
         token = token.get("access")
         uid = self.user.get("id")
@@ -203,8 +195,6 @@ class BlumTod:
         return True
 
     async def start(self):
-        rtime = random.randint(self.cfg.clow, self.cfg.chigh)
-        await countdown(rtime)
         if not self.valid:
             return int(datetime.now().timestamp()) + (3600 * 8)
         balance_url = "https://game-domain.blum.codes/api/v1/user/balance"
@@ -217,16 +207,10 @@ class BlumTod:
         uid = self.user.get("id")
         first_name = self.user.get("first_name")
         self.log(f"{green}login as {white}{first_name}")
-        result = await get_by_id(uid)
-        if not result:
+        avail = await get_by_id(uid)
+        if not avail:
             await insert(uid, first_name)
-            result = await get_by_id(uid)
-        useragent = result.get("useragent")
-        if useragent is None:
-            useragent = UserAgent(os=["android", "ios", "windows"]).random
-            await update_useragent(uid, useragent)
-        self.headers["user-agent"] = useragent
-        token = result.get("token")
+        token = await get_token(uid)
         expired = self.is_expired(token=token)
         if expired:
             result = await self.login()
@@ -326,8 +310,7 @@ class BlumTod:
         if self.cfg.auto_game:
             play_url = "https://game-domain.blum.codes/api/v1/game/play"
             claim_url = "https://game-domain.blum.codes/api/v1/game/claim"
-            game = True
-            while game:
+            while True:
                 res = await self.http(balance_url, self.headers)
                 play = res.json().get("playPasses")
                 if play is None:
@@ -348,7 +331,6 @@ class BlumTod:
                         message = res.json().get("message", "")
                         if message == "cannot start game":
                             self.log(f"{yellow}{message}")
-                            game = False
                             break
                         self.log(f"{yellow}{message}")
                         continue
@@ -447,7 +429,7 @@ async def get_data(data_file, proxy_file):
 
 async def main():
     init()
-    banner = f"""{Fore.YELLOW}
+    banner = f"""{Fore.BLUE}
 ███    ██  ██████  ████████      ██████ ██████  ██    ██ ██████  ████████  ██████  
 ████   ██ ██    ██    ██        ██      ██   ██  ██  ██  ██   ██    ██    ██    ██ 
 ██ ██  ██ ██    ██    ██        ██      ██████    ████   ██████     ██    ██    ██ 
@@ -457,7 +439,10 @@ async def main():
     Auto Blum Script Made by © - @NotCryptoz
     Script Channel  : https://t.me/Instant_Script
     Airdrop Channel: https://t.me/Instant_Earn77
-        {Style.RESET_ALL}"""
+        {Style.RESET_ALL}"""                                                                                                  
+
+
+
     arg = argparse.ArgumentParser()
     arg.add_argument(
         "--data",
@@ -483,7 +468,7 @@ async def main():
     )
     arg.add_argument("--marin", action="store_true")
     args = arg.parse_args()
-    await init_db()
+
     if not await aiofiles.ospath.exists(args.data):
         async with aiofiles.open(args.data, "a") as w:
             pass
@@ -493,13 +478,11 @@ async def main():
     if not await aiofiles.ospath.exists(config_file):
         async with aiofiles.open(config_file, "w") as w:
             _config = {
-                "auto_claim": True,
+                "auto_claim": False,
                 "auto_task": True,
                 "auto_game": True,
                 "low": 110,
                 "high": 120,
-                "clow": 30,
-                "chigh": 60,
             }
             await w.write(json.dumps(_config, indent=4))
     while True:
@@ -515,8 +498,6 @@ async def main():
                 auto_claim=cfg.get("auto_claim"),
                 low=int(cfg.get("low", 110)),
                 high=int(cfg.get("high", 120)),
-                clow=int(cfg.get("clow", 30)),
-                chigh=int(cfg.get("chigh", 60)),
             )
         datas, proxies = await get_data(data_file=args.data, proxy_file=args.proxy)
         menu = f"""
@@ -528,14 +509,13 @@ async def main():
     {green}1{white}.{green}) {white}set on/off auto claim ({(green + "active" if config.auto_claim else red + "non-active")})
     {green}2{white}.{green}) {white}set on/off auto solve task ({(green + "active" if config.auto_task else red + "non-active")})
     {green}3{white}.{green}) {white}set on/off auto play game ({(green + "active" if config.auto_game else red + "non-active")})
-    {green}4{white}.{green}) {white}set game point {green}({config.low}-{config.high})
-    {green}5{white}.{green}) {white}set wait time before start {green}({config.clow}-{config.chigh})
-    {green}6{white}.{green}) {white}start bot (multiprocessing)
-    {green}7{white}.{green}) {white}start bot (sync mode)
-    {green}8{white}.{green}) {white}add proxy
-    {green}9{white}.{green}) {white}add query
-    {green}10{white}.{green}) {white}reset query
-    {green}11{white}.{green}) {white}reset proxy
+    {green}4{white}.{green}) {white}set game point {green}({config.low}/{config.high})
+    {green}5{white}.{green}) {white}start bot (multiprocessing)
+    {green}6{white}.{green}) {white}start bot (sync mode)
+    {green}7{white}.{green}) {white}add proxy
+    {green}8{white}.{green}) {white}add query
+    {green}9{white}.{green}) {white}reset query
+    {green}10{white}.{green}) {white}reset proxy
         """
         opt = None
         if args.action:
@@ -543,7 +523,6 @@ async def main():
         else:
             print(menu)
             opt = input(f"{green}input number : {white}")
-            print(f"{white}~" * 50)
         if opt == "1":
             cfg["auto_claim"] = False if config.auto_claim else True
             async with aiofiles.open(config_file, "w") as w:
@@ -569,8 +548,8 @@ async def main():
             opt = None
             continue
         if opt == "4":
-            low = input(f"{green}input low game point : {white}") or 110
-            high = input(f"{green}input high game point : {white}") or 120
+            low = input(f"{green}input low game point : {white}")
+            high = input(f"{green}input high game point : {white}")
             cfg["low"] = low
             cfg["high"] = high
             async with aiofiles.open(config_file, "w") as w:
@@ -580,17 +559,6 @@ async def main():
             opt = None
             continue
         if opt == "5":
-            low = input(f"{green}input low wait time : {white}") or 30
-            high = input(f"{green}input high wait time : {white}") or 60
-            cfg["clow"] = low
-            cfg["chigh"] = high
-            async with aiofiles.open(config_file, "w") as w:
-                await w.write(json.dumps(cfg, indent=4))
-            print(f"{green}success update wait time !")
-            input(f"{blue}press enter to continue")
-            opt = None
-            continue
-        if opt == "6":
             if not args.worker:
                 worker = int(os.cpu_count() / 2)
                 if worker < 1:
@@ -613,7 +581,7 @@ async def main():
                 end = int(datetime.now().timestamp())
                 total = min(result) - end
                 await countdown(total)
-        if opt == "7":
+        if opt == "6":
             while True:
                 datas, proxies = await get_data(args.data, args.proxy)
                 result = []
@@ -625,7 +593,7 @@ async def main():
                 end = int(datetime.now().timestamp())
                 total = min(result) - end
                 await countdown(total)
-        if opt == "8":
+        if opt == "7":
             proxy = input(f"{green}Enter proxy: {white}")
             async with aiofiles.open(proxy_file, "a") as w:
                 await w.write(f"{proxy}\n")
@@ -633,7 +601,7 @@ async def main():
             input(f"{blue}Press enter to continue")
             opt = None
             continue
-        if opt == "9":
+        if opt == "8":
             query = input(f"{green}Enter query: {white}")
             async with aiofiles.open(data_file, "a") as w:
                 await w.write(f"{query}\n")
@@ -641,14 +609,14 @@ async def main():
             input(f"{blue}Press enter to continue")
             opt = None
             continue
-        if opt == "10":
+        if opt == "9":
             async with aiofiles.open(data_file, "w") as w:
                 await w.write("")
             print(f"{green}Query file reset successfully!")
             input(f"{blue}Press enter to continue")
             opt = None
             continue
-        if opt == "11":
+        if opt == "10":
             async with aiofiles.open(proxy_file, "w") as w:
                 await w.write("")
             print(f"{green}Proxy file reset successfully!")
@@ -661,4 +629,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        exit()
+        exit() 

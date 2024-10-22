@@ -430,15 +430,17 @@ async def get_data(data_file, proxy_file):
 async def main():
     init()
     banner = f"""{Fore.BLUE}
-███    ██  ██████  ████████      ██████ ██████  ██    ██ ██████  ████████  ██████  
-████   ██ ██    ██    ██        ██      ██   ██  ██  ██  ██   ██    ██    ██    ██ 
-██ ██  ██ ██    ██    ██        ██      ██████    ████   ██████     ██    ██    ██ 
-██  ██ ██ ██    ██    ██        ██      ██   ██    ██    ██         ██    ██    ██ 
-██   ████  ██████     ██         ██████ ██   ██    ██    ██         ██     ██████  
-                                                                                             
-    Auto Blum Script Made by © - @NotCryptoz
-    Script Channel  : https://t.me/Instant_Script
-    Airdrop Channel: https://t.me/Instant_Earn77
+
+   _____  ____  _    _ _      
+  / ____|/ __ \| |  | | |     
+ | (___ | |  | | |  | | |     
+  \___ \| |  | | |  | | |     
+  ____) | |__| | |__| | |____ 
+ |_____/ \____/ \____/|______|
+                              
+    Auto Blum Script Made by © - @Soul5031
+    Script Channel  : https://t.me/+x-ebqxDyHZpmMDZl
+    Airdrop Channel: https://t.me/+x-ebqxDyHZpmMDZl
         {Style.RESET_ALL}"""                                                                                                  
 
 

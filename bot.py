@@ -429,7 +429,7 @@ async def get_data(data_file, proxy_file):
 
 async def main():
     init()
-    banner = f"""{Fore.BLUE}
+    banner = f"""{Fore.YELLOW}
 
    _____  ____  _    _ _      
   / ____|/ __ \| |  | | |     
